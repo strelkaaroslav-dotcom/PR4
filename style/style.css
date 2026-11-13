@@ -96,12 +96,3 @@ label span {
     -webkit-text-stroke-width: 2px;
     -webkit-text-stroke-color: black; 
 }
-.burger-card__img {
-    max-width: 200px;
-}
-
-.burger-card__title {
-    color: #3CB371;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: black;
-}

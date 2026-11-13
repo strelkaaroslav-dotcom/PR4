@@ -1,15 +1,3 @@
-const burgerName = 'Стандартний бургер';
-const burgerImg = './image/burger.png';
-
-const burgerTemplate = `
-    <div class="burger-card text-center">
-        <img class="burger-card__img" src="${burgerImg}" alt="${burgerName}">
-        <h3 class="burger-card__title">${burgerName}</h3>
-    </div>
-`;
-
-document.querySelector('#burger').innerHTML = burgerTemplate;
-
 const btnOpenModal = document.querySelector('#btnOpenModal');
 const closeModal = document.querySelector('#closeModal');
 const modalBlock = document.querySelector('#modalBlock');
@@ -42,8 +30,19 @@ const renderQuestions = (indexQuestion) => {
     questionTitle.textContent = questions[indexQuestion].question;
     renderAnswers(indexQuestion);
 
-    prevButton.classList.toggle('d-none', indexQuestion === 0);
-    nextButton.classList.toggle('d-none', indexQuestion === questions.length - 1);
+    switch (indexQuestion) {
+        case 0:
+            prevButton.classList.add('d-none');
+            nextButton.classList.remove('d-none');
+            break;
+        case questions.length - 1:
+            prevButton.classList.remove('d-none');
+            nextButton.classList.add('d-none');
+            break;
+        default:
+            prevButton.classList.remove('d-none');
+            nextButton.classList.remove('d-none');
+    }
 };
 
 btnOpenModal.addEventListener('click', () => {
