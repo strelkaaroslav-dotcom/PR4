@@ -108,7 +108,21 @@
     </div>
   </div>
 
-  <script src="./questions.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbJZLbmP7CPQGij2FsisW1qTlFHAVuAj4",
+      authDomain: "burger-631b2.firebaseapp.com",
+      databaseURL: "https://burger-631b2-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "burger-631b2",
+      storageBucket: "burger-631b2.firebasestorage.app",
+      messagingSenderId: "485561334043",
+      appId: "1:485561334043:web:001c5ca26933f7cb893bbe"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+  </script>
   <script src="./script/script.js"></script>
 </body>
 

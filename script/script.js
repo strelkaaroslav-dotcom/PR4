@@ -1,66 +1,120 @@
-const btnOpenModal = document.querySelector('#btnOpenModal');
-const closeModal = document.querySelector('#closeModal');
-const modalBlock = document.querySelector('#modalBlock');
-const questionTitle = document.querySelector('#question');
-const formAnswers = document.querySelector('#formAnswers');
-const prevButton = document.querySelector('#prev');
-const nextButton = document.querySelector('#next');
+document.addEventListener('DOMContentLoaded', () => {
+    const btnOpenModal = document.querySelector('#btnOpenModal');
+    const modalBlock = document.querySelector('#modalBlock');
+    const closeModal = document.querySelector('#closeModal');
+    const questionTitle = document.querySelector('#question');
+    const formAnswers = document.querySelector('#formAnswers');
+    const nextButton = document.querySelector('#next');
+    const prevButton = document.querySelector('#prev');
+    const sendButton = document.querySelector('#send');
 
-let numberQuestion = 0;
+    const getData = () => {
+        questionTitle.textContent = '';
+        formAnswers.textContent = 'LOAD';
+        [prevButton, nextButton, sendButton].forEach(($btn) => $btn.classList.add('d-none'));
 
-const renderAnswers = (index) => {
-    const { answers, type } = questions[index];
+        firebase.database().ref().child('questions').once('value')
+            .then((snap) => playTest(snap.val()))
+            .catch((err) => {
+                formAnswers.textContent = 'Помилка завантаження даних';
+                console.error(err);
+            });
+    };
 
-    formAnswers.innerHTML = '';
-
-    answers.forEach(({ title, url }, i) => {
-        formAnswers.insertAdjacentHTML('beforeend', `
-            <div class="answers-item d-flex flex-column">
-                <input type="${type}" id="answerItem${i}" name="answer" class="d-none" value="${title}">
-                <label for="answerItem${i}" class="d-flex flex-column justify-content-between">
-                    <img class="answerImg" src="${url}" alt="${title}">
-                    <span>${title}</span>
-                </label>
-            </div>
-        `);
+    btnOpenModal.addEventListener('click', () => {
+        modalBlock.classList.add('d-block');
+        getData();
     });
-};
 
-const renderQuestions = (indexQuestion) => {
-    questionTitle.textContent = questions[indexQuestion].question;
-    renderAnswers(indexQuestion);
+    closeModal.addEventListener('click', () => {
+        modalBlock.classList.remove('d-block');
+    });
 
-    switch (indexQuestion) {
-        case 0:
-            prevButton.classList.add('d-none');
-            nextButton.classList.remove('d-none');
-            break;
-        case questions.length - 1:
-            prevButton.classList.remove('d-none');
-            nextButton.classList.add('d-none');
-            break;
-        default:
-            prevButton.classList.remove('d-none');
-            nextButton.classList.remove('d-none');
-    }
-};
+    const playTest = (questions) => {
+        const finalAnswers = [];
+        let numberQuestion = 0;
 
-btnOpenModal.addEventListener('click', () => {
-    modalBlock.classList.add('d-block');
-    numberQuestion = 0;
-    renderQuestions(numberQuestion);
-});
+        const renderAnswers = (index) => {
+            const { answers, type } = questions[index];
 
-closeModal.addEventListener('click', () => {
-    modalBlock.classList.remove('d-block');
-});
+            formAnswers.innerHTML = '';
 
-prevButton.addEventListener('click', () => {
-    numberQuestion--;
-    renderQuestions(numberQuestion);
-});
+            answers.forEach(({ title, url }, i) => {
+                formAnswers.insertAdjacentHTML('beforeend', `
+                    <div class="answers-item d-flex flex-column">
+                        <input type="${type}" id="answerItem${i}" name="answer" class="d-none" value="${title}">
+                        <label for="answerItem${i}" class="d-flex flex-column justify-content-between">
+                            <img class="answerImg" src="${url}" alt="${title}">
+                            <span>${title}</span>
+                        </label>
+                    </div>
+                `);
+            });
+        };
 
-nextButton.addEventListener('click', () => {
-    numberQuestion++;
-    renderQuestions(numberQuestion);
+        const renderButtons = (indexQuestion) => {
+            switch (indexQuestion) {
+                case 0:
+                    prevButton.classList.add('d-none');
+                    nextButton.classList.remove('d-none');
+                    sendButton.classList.add('d-none');
+                    break;
+                case questions.length - 1:
+                    prevButton.classList.remove('d-none');
+                    nextButton.classList.add('d-none');
+                    sendButton.classList.remove('d-none');
+                    break;
+                default:
+                    prevButton.classList.remove('d-none');
+                    nextButton.classList.remove('d-none');
+                    sendButton.classList.add('d-none');
+            }
+        };
+
+        const renderQuestions = (indexQuestion) => {
+            if (indexQuestion === questions.length) {
+                [prevButton, nextButton, sendButton].forEach(($btn) => $btn.classList.add('d-none'));
+                questionTitle.textContent = '';
+                formAnswers.textContent = 'Дякуємо за пройдений тест!';
+                return;
+            }
+
+            questionTitle.textContent = questions[indexQuestion].question;
+            renderAnswers(indexQuestion);
+            renderButtons(indexQuestion);
+        };
+
+        const checkAnswer = () => {
+            const obj = {};
+            const inputs = [...formAnswers.elements].filter((input) => input.checked);
+
+            inputs.forEach((input, index) => {
+                obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+            });
+
+            finalAnswers[numberQuestion] = obj;
+        };
+
+        nextButton.onclick = () => {
+            checkAnswer();
+            numberQuestion++;
+            renderQuestions(numberQuestion);
+        };
+
+        prevButton.onclick = () => {
+            numberQuestion--;
+            renderQuestions(numberQuestion);
+        };
+
+        sendButton.onclick = () => {
+            checkAnswer();
+            numberQuestion++;
+            renderQuestions(numberQuestion);
+
+            firebase.database().ref().child('contacts').push(finalAnswers);
+            console.log(finalAnswers);
+        };
+
+        renderQuestions(numberQuestion);
+    };
 });
